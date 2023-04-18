@@ -1,6 +1,7 @@
 #include "heapfile.h"
 #include "error.h"
 
+
 // routine to create a heapfile
 const Status createHeapFile(const string fileName)
 {
@@ -17,10 +18,33 @@ const Status createHeapFile(const string fileName)
     {
 		// file doesn't exist. First create it and allocate
 		// an empty header page and data page.
-		
-		
-		
-		
+        db.createFile(fileName); 
+        status = db.openFile(fileName,file);
+        if(status != OK)
+        {
+            return status; 
+        }
+        status = bufMgr->allocPage(file,hdrPageNo,newPage); 
+        FileHdrPage* hdrPage = (FileHdrPage *) newPage; 
+        hdrPage->fileName = fileName; 
+        hdrPage->firstPage = 0; 
+        hdrPage->lastPage = 0;
+        hdrPage->pageCnt = 1; 
+        hdrPage->recCnt = 0;
+
+        if(status != OK)
+        {
+            return status; 
+        }
+        status = bufMgr->allocPage(file,newPageNo,newPage); 
+        newPage->init(newPageNo); 
+        newPage->
+        bufMgr->unPinPage(file,newPageNo,true);
+        bufMgr->unPinPage(file,hdrPageNo,hdrPage); 
+        bufMgr->flushFile(file);  
+
+        
+
 		
 		
 		
