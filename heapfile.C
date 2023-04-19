@@ -2,7 +2,9 @@
 #include "error.h"
 #include <cstring>
 #include <string>
-
+#include <string.h>
+#include "stdlib.h"
+#include <stdio.h>
 
 // routine to create a heapfile
 const Status createHeapFile(const string fileName)
@@ -300,7 +302,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
     int     nextPageNo;
     Record      rec;
     Status status_in = OK;
-
+//read next one 
 if (curPage == NULL) {
     curPageNo = headerPage->firstPage;
     status = bufMgr->readPage(filePtr, curPageNo, curPage);
@@ -310,47 +312,73 @@ if (curPage == NULL) {
     // status = curpage->firstRecord(tmpRid);
     curRec = NULLRID;
 }
+if(curPageNo == -1)
+{
+    return FILEEOF; 
+}
+
     curRec = NULLRID;
 
 while (status != FILEEOF) {
 
     status_in = curPage->nextRecord(curRec, nextRid);
+    if(status_in == OK)
+    {
+        curRec = nextRid; 
+    }
+    
 
     if (status_in == ENDOFPAGE) {
         //move to next page, get first record and assign to rec
-        // TOP:
+        TOP: 
         curPage->getNextPage(nextPageNo);
+
 
         if (nextPageNo == -1) {
             status = FILEEOF;
+            return status; 
         }
 
-        else {
-        bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-        bufMgr->readPage(filePtr, nextPageNo, curPage);
-        
-        // status = curPage->firstRecord(curRec);
-        // if (status == NORECORDS) {
-        //     goto TOP;
-        // }
+        else { 
+            bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+            bufMgr->readPage(filePtr, nextPageNo, curPage);
 
-        curPageNo = nextPageNo;
-        curDirtyFlag = false;
-        // curPage->getRecord(curRec, rec);
-        //curRec.slotNo = -1;
-        curRec = NULLRID;
+            curPageNo = nextPageNo;
+            curDirtyFlag = false;
+        
+            status = curPage->firstRecord(curRec);
+            if (status == NORECORDS) {
+                goto TOP;
+            } else {
+                curPage->getRecord(curRec, rec);
+                if(matchRec(rec)) {
+                    outRid = curRec;
+                    curRec = 
+                    return OK;
+                }
+            }
+
+            
+            //curRec.slotNo = -1;
+            // curRec = NULLRID;
         }
     }
     else {
         curPage->getRecord(nextRid, rec);
         if (matchRec(rec)) { //get next record and compare, return if record found, else continue
-            curRec = nextRid;
+            cout << "p5\n"; 
+            cout << "Before: " << curRec.pageNo << " " << curRec.slotNo;
+            //curRec = nextRid;
+            cout << " | After: "<< curRec.pageNo << " " << curRec.slotNo << endl;
             outRid = curRec;
+            cout << outRid.pageNo << " " << outRid.slotNo << endl; 
             return OK;
         }
-        else {
-            curRec = nextRid;
-        }
+        // else {
+        //     cout << "Before2: " << curRec.pageNo << " " << curRec.slotNo;
+        //     curRec = nextRid;
+        //     cout << " | After2: "<< curRec.pageNo << " " << curRec.slotNo << endl;
+        // }
     } 
    }
     return status;
