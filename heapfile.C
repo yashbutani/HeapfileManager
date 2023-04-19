@@ -530,6 +530,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         // }
         headerPage->lastPage=newPageNo; 
         headerPage->pageCnt++; 
+        return status; 
     }
 }
 
