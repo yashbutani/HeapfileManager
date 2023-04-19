@@ -170,7 +170,7 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
     Status status;
 
     // cout<< "getRecord. record (" << rid.pageNo << "." << rid.slotNo << ")" << endl;
-   if(curPageNo = rid.pageNo)
+   if(curPageNo == rid.pageNo)
    {
     status = curPage->getRecord(rid,rec);
     if(status != OK )
@@ -192,9 +192,9 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
    {
     return status; 
    }
-curDirtyFlag = false;
-curPageNo = rid.pageNo;
-curRec = rid;
+    curDirtyFlag = false;
+    curPageNo = rid.pageNo;
+    curRec = rid;
 
 status = curPage->getRecord(rid, rec);
 if(status != OK)
